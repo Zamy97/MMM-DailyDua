@@ -1,0 +1,58 @@
+.MMM-DailyDua .dua-title {
+	text-align: center;
+	margin-bottom: 6px;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: #f4d03f;
+}
+
+.MMM-DailyDua .dua-category,
+.MMM-DailyDua .dua-name {
+	text-align: center;
+	margin-bottom: 8px;
+	font-style: italic;
+}
+
+.MMM-DailyDua .dua-arabic {
+	direction: rtl;
+	text-align: center;
+	line-height: 1.8;
+	margin-bottom: 10px;
+	font-size: 1.3rem;
+}
+
+.MMM-DailyDua .dua-transliteration {
+	text-align: center;
+	line-height: 1.5;
+	margin-bottom: 8px;
+	font-style: italic;
+	color: #b8d4e8;
+}
+
+.MMM-DailyDua .dua-translation,
+.MMM-DailyDua .dua-bangla {
+	text-align: center;
+	line-height: 1.6;
+	max-width: 880px;
+	margin: 0 auto 6px;
+}
+
+.MMM-DailyDua .dua-bangla {
+	color: #d7f0ff;
+}
+
+.MMM-DailyDua .dua-repeat {
+	text-align: center;
+	margin-top: 4px;
+	color: #76d7c4;
+}
+
+.MMM-DailyDua .dua-reference {
+	text-align: center;
+	margin-top: 4px;
+	opacity: 0.65;
+}
+
+.MMM-DailyDua .error {
+	color: #ff6b6b;
+}

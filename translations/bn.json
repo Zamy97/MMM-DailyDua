@@ -1,0 +1,12 @@
+{
+	"TITLE": "আজকের দোয়া",
+	"LOADING": "দোয়া লোড হচ্ছে...",
+	"ERROR": "দোয়া লোড করা যায়নি।",
+	"REPEAT": "পাঠ করুন",
+	"CATEGORY_MORNING": "সকালের আযকার",
+	"CATEGORY_EVENING": "সন্ধ্যার আযকার",
+	"CATEGORY_DHIKR": "যিকির",
+	"CATEGORY_GENERAL": "দোয়া",
+	"CATEGORY_SLEEP": "ঘুমানোর আগে",
+	"CATEGORY_SALAH": "নামাযের পর"
+}

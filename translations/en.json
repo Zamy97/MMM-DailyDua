@@ -1,0 +1,12 @@
+{
+	"TITLE": "Dua of the Day",
+	"LOADING": "Loading dua...",
+	"ERROR": "Could not load dua.",
+	"REPEAT": "Repeat",
+	"CATEGORY_MORNING": "Morning Adhkar",
+	"CATEGORY_EVENING": "Evening Adhkar",
+	"CATEGORY_DHIKR": "Dhikr",
+	"CATEGORY_GENERAL": "Dua",
+	"CATEGORY_SLEEP": "Before Sleep",
+	"CATEGORY_SALAH": "After Salah"
+}
