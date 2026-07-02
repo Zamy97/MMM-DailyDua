@@ -22,6 +22,34 @@ module.exports = NodeHelper.create({
 		return Math.floor(diff / (1000 * 60 * 60 * 24));
 	},
 
+	parseTimeToMinutes(value, fallbackHour) {
+		if (typeof value === "string" && value.includes(":")) {
+			const [hours, minutes] = value.split(":").map((part) => parseInt(part, 10));
+			if (!Number.isNaN(hours) && !Number.isNaN(minutes)) {
+				return hours * 60 + minutes;
+			}
+		}
+
+		const hour = parseInt(value ?? fallbackHour, 10);
+		return (Number.isNaN(hour) ? fallbackHour : hour) * 60;
+	},
+
+	isMorningWindow(date, options) {
+		const nowMinutes = date.getHours() * 60 + date.getMinutes();
+		const morningMinutes = this.parseTimeToMinutes(options.morningTime, options.morningStartHour ?? 5);
+		const eveningMinutes = this.parseTimeToMinutes(options.eveningTime, options.eveningStartHour ?? 16);
+
+		if (morningMinutes === eveningMinutes) {
+			return nowMinutes >= morningMinutes;
+		}
+
+		if (morningMinutes < eveningMinutes) {
+			return nowMinutes >= morningMinutes && nowMinutes < eveningMinutes;
+		}
+
+		return nowMinutes >= morningMinutes || nowMinutes < eveningMinutes;
+	},
+
 	loadData(dataFile) {
 		const filePath = path.join(__dirname, dataFile || DEFAULT_DATA_FILE);
 
@@ -48,13 +76,22 @@ module.exports = NodeHelper.create({
 		}
 
 		if (options.filterByTime) {
-			const hour = new Date().getHours();
-			const isMorning = hour >= (options.morningStartHour ?? 4) && hour < (options.eveningStartHour ?? 15);
-			const timeCategories = isMorning ? ["morning", "dhikr", "general"] : ["evening", "sleep", "dhikr", "general"];
-			const timePool = pool.filter((item) => timeCategories.includes(item.category));
+			const isMorning = this.isMorningWindow(new Date(), options);
 
-			if (timePool.length > 0) {
-				pool = timePool;
+			if (options.strictMorningEvening !== false) {
+				const targetCategory = isMorning ? "morning" : "evening";
+				const strictPool = pool.filter((item) => item.category === targetCategory);
+				if (strictPool.length > 0) {
+					pool = strictPool;
+				}
+			} else {
+				const timeCategories = isMorning
+					? ["morning", "dhikr", "general"]
+					: ["evening", "sleep", "dhikr", "general"];
+				const timePool = pool.filter((item) => timeCategories.includes(item.category));
+				if (timePool.length > 0) {
+					pool = timePool;
+				}
 			}
 		}
 

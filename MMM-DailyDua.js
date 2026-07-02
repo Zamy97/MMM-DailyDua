@@ -12,10 +12,14 @@ Module.register("MMM-DailyDua", {
 		dataFile: "data/duas.json",
 		category: "all",
 		filterByTime: false,
-		morningStartHour: 4,
-		eveningStartHour: 15,
+		morningTime: "05:00",
+		eveningTime: "16:00",
+		morningStartHour: 5,
+		eveningStartHour: 16,
+		strictMorningEvening: true,
 		rotationMode: "daily",
 		updateInterval: 60 * 60 * 1000,
+		timeCheckInterval: 60 * 1000,
 		animationSpeed: 2000,
 		language: config.language || "en"
 	},
@@ -55,13 +59,44 @@ Module.register("MMM-DailyDua", {
 		return this.dua.text;
 	},
 
+	getTimePeriodKey() {
+		if (!this.config.filterByTime) {
+			return "all";
+		}
+
+		const parseMinutes = (value, fallbackHour) => {
+			if (typeof value === "string" && value.includes(":")) {
+				const [hours, minutes] = value.split(":").map((part) => parseInt(part, 10));
+				return hours * 60 + minutes;
+			}
+			return (parseInt(value ?? fallbackHour, 10) || fallbackHour) * 60;
+		};
+
+		const now = new Date();
+		const nowMinutes = now.getHours() * 60 + now.getMinutes();
+		const morning = parseMinutes(this.config.morningTime, this.config.morningStartHour);
+		const evening = parseMinutes(this.config.eveningTime, this.config.eveningStartHour);
+
+		let isMorning = false;
+		if (morning < evening) {
+			isMorning = nowMinutes >= morning && nowMinutes < evening;
+		} else {
+			isMorning = nowMinutes >= morning || nowMinutes < evening;
+		}
+
+		return isMorning ? "morning" : "evening";
+	},
+
 	requestDua() {
 		this.sendSocketNotification("GET_DUA", {
 			dataFile: this.config.dataFile,
 			category: this.config.category,
 			filterByTime: this.config.filterByTime,
+			morningTime: this.config.morningTime,
+			eveningTime: this.config.eveningTime,
 			morningStartHour: this.config.morningStartHour,
 			eveningStartHour: this.config.eveningStartHour,
+			strictMorningEvening: this.config.strictMorningEvening,
 			rotationMode: this.config.rotationMode
 		});
 	},
@@ -82,11 +117,22 @@ Module.register("MMM-DailyDua", {
 		this.dua = null;
 		this.errorMessage = null;
 
+		this.timePeriodKey = this.getTimePeriodKey();
 		this.requestDua();
 
 		setInterval(() => {
 			this.requestDua();
 		}, this.config.updateInterval);
+
+		if (this.config.filterByTime) {
+			setInterval(() => {
+				const period = this.getTimePeriodKey();
+				if (period !== this.timePeriodKey) {
+					this.timePeriodKey = period;
+					this.requestDua();
+				}
+			}, this.config.timeCheckInterval);
+		}
 	},
 
 	getDom() {

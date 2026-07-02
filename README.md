@@ -7,6 +7,8 @@ Arabic, transliteration, English, and Bangla. Designed for future audio playback
 ## Features
 
 - 30 authentic duas & adhkar (morning, evening, sleep, salah, general)
+- **7 morning** + **6 evening** adhkar (daily rotation — about a week before repeat)
+- Schedule morning/evening windows with `morningTime` / `eveningTime` (`"HH:MM"`)
 - Daily rotation (`dayOfYear % total`) or random
 - Optional time-based filtering (morning adhkar before 3pm, evening after)
 - Category filter: `morning`, `evening`, `dhikr`, `general`, `sleep`, `salah`
@@ -45,15 +47,22 @@ Add to `config/config.js`:
 }
 ```
 
-### Morning / evening auto-filter
+### Morning / evening schedule
 
-Shows morning adhkar from 4am–3pm, evening adhkar after 3pm:
+Morning adhkar shows between `morningTime` and `eveningTime`. Evening adhkar shows the rest of the day.
 
 ```js
 filterByTime: true,
-morningStartHour: 4,
-eveningStartHour: 15
+morningTime: "05:00",   // morning adhkar starts (after Fajr)
+eveningTime: "16:00",   // evening adhkar starts (after Asr)
+strictMorningEvening: true   // only morning/evening items in each window
 ```
+
+Legacy hour-only config still works: `morningStartHour: 5`, `eveningStartHour: 16`.
+
+Set `strictMorningEvening: false` to also include general dhikr and duas in each window.
+
+The module checks every minute and switches automatically when the time crosses your boundary.
 
 ### Category only
 
@@ -70,8 +79,12 @@ category: "morning"   // morning | evening | dhikr | general | sleep | salah | a
 | `rotationMode` | `daily` or `random` | `daily` |
 | `category` | Filter by category or `all` | `all` |
 | `filterByTime` | Auto morning/evening pool | `false` |
-| `morningStartHour` | Morning starts (24h) | `4` |
-| `eveningStartHour` | Evening starts (24h) | `15` |
+| `morningTime` | Morning adhkar starts (`"HH:MM"`) | `"05:00"` |
+| `eveningTime` | Evening adhkar starts (`"HH:MM"`) | `"16:00"` |
+| `morningStartHour` | Fallback if `morningTime` omitted | `5` |
+| `eveningStartHour` | Fallback if `eveningTime` omitted | `16` |
+| `strictMorningEvening` | Only `morning` / `evening` items per window | `true` |
+| `timeCheckInterval` | How often to check for window switch (ms) | `60000` |
 | `showArabic` | Show Arabic text | `true` |
 | `showTransliteration` | Show romanized Arabic | `true` |
 | `showTranslation` | Show English/Bangla meaning | `true` |
