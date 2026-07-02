@@ -108,6 +108,10 @@ module.exports = NodeHelper.create({
 		let index = 0;
 		if (options.rotationMode === "random") {
 			index = Math.floor(Math.random() * pool.length);
+		} else if (options.rotationMode === "interval") {
+			const hours = options.rotateEveryHours || 3;
+			const slot = Math.floor(Date.now() / (hours * 60 * 60 * 1000));
+			index = slot % pool.length;
 		} else {
 			index = this.getDayOfYear(new Date()) % pool.length;
 		}

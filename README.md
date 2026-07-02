@@ -6,9 +6,9 @@ Arabic, transliteration, English, and Bangla. Designed for future audio playback
 
 ## Features
 
-- 30 authentic duas & adhkar (morning, evening, sleep, salah, general)
-- **7 morning** + **6 evening** adhkar (daily rotation — about a week before repeat)
-- Schedule morning/evening windows with `morningTime` / `eveningTime` (`"HH:MM"`)
+- **48** authentic duas & adhkar
+- **15 morning** + **13 evening** adhkar
+- Rotate every **3 hours** by default (`rotationMode: "interval"`)
 - Daily rotation (`dayOfYear % total`) or random
 - Optional time-based filtering (morning adhkar before 3pm, evening after)
 - Category filter: `morning`, `evening`, `dhikr`, `general`, `sleep`, `salah`
@@ -40,9 +40,11 @@ Add to `config/config.js`:
 		showReference: true,
 		showRepeat: true,
 		language: "bn",
-		rotationMode: "daily",
-		filterByTime: false,
-		category: "all"
+		rotationMode: "interval",
+		rotateEveryHours: 3,
+		filterByTime: true,
+		morningTime: "05:00",
+		eveningTime: "16:00"
 	}
 }
 ```
@@ -76,7 +78,8 @@ category: "morning"   // morning | evening | dhikr | general | sleep | salah | a
 |--------|-------------|---------|
 | `dataFile` | Path to JSON (relative to module) | `data/duas.json` |
 | `language` | UI labels: `en` or `bn` | `en` |
-| `rotationMode` | `daily` or `random` | `daily` |
+| `rotationMode` | `daily`, `interval`, or `random` | `interval` |
+| `rotateEveryHours` | Hours between duas when `interval` mode | `3` |
 | `category` | Filter by category or `all` | `all` |
 | `filterByTime` | Auto morning/evening pool | `false` |
 | `morningTime` | Morning adhkar starts (`"HH:MM"`) | `"05:00"` |

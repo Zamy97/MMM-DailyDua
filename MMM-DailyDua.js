@@ -17,7 +17,8 @@ Module.register("MMM-DailyDua", {
 		morningStartHour: 5,
 		eveningStartHour: 16,
 		strictMorningEvening: true,
-		rotationMode: "daily",
+		rotationMode: "interval",
+		rotateEveryHours: 3,
 		updateInterval: 60 * 60 * 1000,
 		timeCheckInterval: 60 * 1000,
 		animationSpeed: 2000,
@@ -87,6 +88,11 @@ Module.register("MMM-DailyDua", {
 		return isMorning ? "morning" : "evening";
 	},
 
+	getIntervalSlot() {
+		const hours = this.config.rotateEveryHours || 3;
+		return Math.floor(Date.now() / (hours * 60 * 60 * 1000));
+	},
+
 	requestDua() {
 		this.sendSocketNotification("GET_DUA", {
 			dataFile: this.config.dataFile,
@@ -97,7 +103,8 @@ Module.register("MMM-DailyDua", {
 			morningStartHour: this.config.morningStartHour,
 			eveningStartHour: this.config.eveningStartHour,
 			strictMorningEvening: this.config.strictMorningEvening,
-			rotationMode: this.config.rotationMode
+			rotationMode: this.config.rotationMode,
+			rotateEveryHours: this.config.rotateEveryHours
 		});
 	},
 
@@ -118,21 +125,36 @@ Module.register("MMM-DailyDua", {
 		this.errorMessage = null;
 
 		this.timePeriodKey = this.getTimePeriodKey();
+		this.intervalSlot = this.getIntervalSlot();
 		this.requestDua();
 
 		setInterval(() => {
 			this.requestDua();
 		}, this.config.updateInterval);
 
-		if (this.config.filterByTime) {
-			setInterval(() => {
+		setInterval(() => {
+			let shouldRefresh = false;
+
+			if (this.config.filterByTime) {
 				const period = this.getTimePeriodKey();
 				if (period !== this.timePeriodKey) {
 					this.timePeriodKey = period;
-					this.requestDua();
+					shouldRefresh = true;
 				}
-			}, this.config.timeCheckInterval);
-		}
+			}
+
+			if (this.config.rotationMode === "interval") {
+				const slot = this.getIntervalSlot();
+				if (slot !== this.intervalSlot) {
+					this.intervalSlot = slot;
+					shouldRefresh = true;
+				}
+			}
+
+			if (shouldRefresh) {
+				this.requestDua();
+			}
+		}, this.config.timeCheckInterval);
 	},
 
 	getDom() {
