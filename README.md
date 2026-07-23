@@ -2,7 +2,7 @@
 
 A [MagicMirror²](https://github.com/MagicMirrorOrg/MagicMirror) module that displays a **daily dua or dhikr** from a local JSON file — no API, works offline.
 
-Arabic, transliteration, English, and Bangla. Optional **morning / evening adhkar audio** via `mpv`.
+Arabic, transliteration, English, and Bangla. Morning/evening **adhkar audio** is included in the repo and scheduled with a simple **cron + mpv** setup.
 
 ## Features
 
@@ -13,8 +13,8 @@ Arabic, transliteration, English, and Bangla. Optional **morning / evening adhka
 - Optional time-based filtering (morning adhkar before 3pm, evening after)
 - Category filter: `morning`, `evening`, `dhikr`, `general`, `sleep`, `salah`
 - Bangla UI labels + Bangla text when `language: "bn"`
-- Falls back to English when Bangla text is missing
-- Optional scheduled adhkar audio with **mpv**
+- Bundled morning + evening adhkar audio (`audio/*.m4a`)
+- Cron-based playback with **mpv** (morning fixed time, evening ~40 min before sunset from lat/lon)
 - Small JSON (~30 KB) — Pi-friendly
 
 ## Install
@@ -22,34 +22,47 @@ Arabic, transliteration, English, and Bangla. Optional **morning / evening adhka
 ```bash
 cd ~/MagicMirror/modules
 git clone https://github.com/Zamy97/MMM-DailyDua.git
+# or: git pull  (audio files come with the repo)
 ```
 
-### Audio playback (optional)
+### Adhkar audio (cron + mpv)
 
-1. Install tools on the Pi:
+Audio sources (bundled under `audio/`):
+
+- Morning: [youtube.com/watch?v=P8EIBksC0MA](https://www.youtube.com/watch?v=P8EIBksC0MA) → `audio/morning-adhkar.m4a`
+- Evening: [youtube.com/watch?v=fQUbhEHetks](https://www.youtube.com/watch?v=fQUbhEHetks) → `audio/evening-adhkar.m4a`
+
+1. Install mpv:
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y mpv ffmpeg
-sudo curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
-sudo chmod a+rx /usr/local/bin/yt-dlp
+sudo apt-get install -y mpv
 ```
 
-2. Download the morning + evening tracks (from YouTube):
+2. Install cron jobs for your house (set lat/lon + morning time):
 
 ```bash
 cd ~/MagicMirror/modules/MMM-DailyDua
-bash scripts/download-audio.sh
+bash scripts/install-cron.sh --lat 42.4710579 --lon -83.0133362 --morning 7:15 --offset 40
 ```
 
-Sources:
+That installs:
 
-- Morning: [youtube.com/watch?v=P8EIBksC0MA](https://www.youtube.com/watch?v=P8EIBksC0MA)
-- Evening: [youtube.com/watch?v=fQUbhEHetks](https://www.youtube.com/watch?v=fQUbhEHetks)
+| Job | Schedule |
+|-----|----------|
+| Morning adhkar | every day at `7:15` (change with `--morning`) |
+| Evening adhkar | checks every 5 minutes; plays once ~`--offset` minutes before sunset for that lat/lon |
 
-Files are saved as `audio/morning-adhkar.m4a` and `audio/evening-adhkar.m4a` (not committed to git).
+3. Test anytime:
 
-## Config
+```bash
+bash scripts/play-adhkar.sh morning
+bash scripts/play-adhkar.sh evening
+```
+
+Logs: `~/.local/state/mmm-dailydua/cron.log`
+
+## Config (display module)
 
 Add to `config/config.js`:
 
@@ -70,37 +83,21 @@ Add to `config/config.js`:
 		rotateEveryHours: 3,
 		filterByTime: true,
 		morningTime: "05:00",
-		eveningTime: "16:00",
-
-		// Adhkar audio
-		playAudio: true,
-		morningPlayTime: "07:15",              // ~7:00–7:30 window; plays once at this time
-		eveningMinutesBeforeSunset: 40,        // ~40 minutes before Maghrib/sunset
-		lat: 42.4710579,                       // your house latitude
-		lon: -83.0133362                       // your house longitude
+		eveningTime: "16:00"
 	}
 }
 ```
 
-### Morning / evening text schedule
+Audio is **not** controlled by MagicMirror config — only by cron (above).
 
-Morning adhkar text shows between `morningTime` and `eveningTime`. Evening adhkar shows the rest of the day.
+### Morning / evening text schedule
 
 ```js
 filterByTime: true,
-morningTime: "05:00",   // morning adhkar starts (after Fajr)
-eveningTime: "16:00",   // evening adhkar starts (after Asr)
-strictMorningEvening: true   // only morning/evening items in each window
+morningTime: "05:00",
+eveningTime: "16:00",
+strictMorningEvening: true
 ```
-
-### Morning / evening audio schedule
-
-| When | Default | Notes |
-|------|---------|--------|
-| Morning audio | `07:15` | Plays once per day at `morningPlayTime` |
-| Evening audio | 40 min before sunset | Uses `lat` / `lon` to estimate sunset (Maghrib) |
-
-Requires `playAudio: true`, mpv installed, and the two audio files from `scripts/download-audio.sh`.
 
 ## Config options
 
@@ -124,41 +121,6 @@ Requires `playAudio: true`, mpv installed, and the two audio files from `scripts
 | `showBangla` | Show Bangla when language is `en` | `true` |
 | `showRepeat` | Show repeat count (e.g. 3×) | `true` |
 | `bilingual` | Show English under Bangla | `false` |
-| `playAudio` | Enable scheduled morning/evening audio | `false` |
-| `audioPlayer` | CLI player binary | `"mpv"` |
-| `morningAudioFile` | Morning track (relative to module) | `audio/morning-adhkar.m4a` |
-| `eveningAudioFile` | Evening track (relative to module) | `audio/evening-adhkar.m4a` |
-| `morningPlayTime` | Local time to play morning audio | `"07:15"` |
-| `eveningMinutesBeforeSunset` | Minutes before sunset for evening audio | `40` |
-| `lat` / `lon` | Location for sunset estimate (required for evening audio) | `null` |
-| `audioCheckInterval` | How often the scheduler checks (ms) | `30000` |
-| `mpvArgs` | Extra args passed to mpv | `[]` |
-
-## Custom duas
-
-Edit `data/duas.json` or create your own file:
-
-```json
-{
-	"collection": "My Duas",
-	"items": [
-		{
-			"id": 1,
-			"category": "general",
-			"title": "My Dua",
-			"titleBn": "আমার দোয়া",
-			"arabic": "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً",
-			"transliteration": "Rabbana atina fid-dunya hasanah",
-			"text": "Our Lord, give us good in this world.",
-			"textBn": "হে আমাদের রব! দুনিয়ায় আমাদের কল্যাণ দিন।",
-			"repeat": 1,
-			"reference": "Quran 2:201"
-		}
-	]
-}
-```
-
-Point config at it: `dataFile: "data/my-duas.json"`
 
 ## License
 

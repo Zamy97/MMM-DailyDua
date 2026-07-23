@@ -1,11 +1,11 @@
-# Morning + evening adhkar audio sources for scheduled mpv playback.
-#
-# Morning: https://www.youtube.com/watch?v=P8EIBksC0MA
-# Evening: https://www.youtube.com/watch?v=fQUbhEHetks
-#
-# Download with:
-#   bash scripts/download-audio.sh
-#
-# Expected files (gitignored — download on each Pi):
-#   audio/morning-adhkar.m4a
-#   audio/evening-adhkar.m4a
+# Bundled adhkar audio (played by cron + mpv)
+
+- `morning-adhkar.m4a` — https://www.youtube.com/watch?v=P8EIBksC0MA
+- `evening-adhkar.m4a` — https://www.youtube.com/watch?v=fQUbhEHetks
+
+Schedule on a Pi:
+
+```bash
+sudo apt-get install -y mpv
+bash scripts/install-cron.sh --lat YOUR_LAT --lon YOUR_LON --morning 7:15 --offset 40
+```
