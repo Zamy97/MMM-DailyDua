@@ -108,7 +108,8 @@ module.exports = NodeHelper.create({
 		}
 
 		const hourAngle = Math.acos(cosHourAngle);
-		const sunsetUtcMinutes = 720 - 4 * (lon + (hourAngle / rad)) - eqTime;
+		// Sunset uses -HA; sunrise would use +HA (NOAA solar calculator).
+		const sunsetUtcMinutes = 720 - 4 * (lon - hourAngle / rad) - eqTime;
 		const localOffsetMinutes = -date.getTimezoneOffset();
 		return sunsetUtcMinutes + localOffsetMinutes;
 	},
