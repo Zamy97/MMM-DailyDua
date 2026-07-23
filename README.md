@@ -27,40 +27,52 @@ git clone https://github.com/Zamy97/MMM-DailyDua.git
 
 ### Adhkar audio (cron + mpv)
 
-Audio sources (bundled under `audio/`):
+Audio is bundled in this repo (`audio/morning-adhkar.m4a`, `audio/evening-adhkar.m4a`).  
+Playback is scheduled with **cron**, not MagicMirror config.
 
-- Morning: [youtube.com/watch?v=P8EIBksC0MA](https://www.youtube.com/watch?v=P8EIBksC0MA) → `audio/morning-adhkar.m4a`
-- Evening: [youtube.com/watch?v=fQUbhEHetks](https://www.youtube.com/watch?v=fQUbhEHetks) → `audio/evening-adhkar.m4a`
+#### How to set location (don’t forget)
 
-1. Install mpv:
+Evening timing needs the **house lat/lon** (same numbers as prayer times / weather).
 
-```bash
-sudo apt-get update
-sudo apt-get install -y mpv
-```
-
-2. Install cron jobs for your house (set lat/lon + morning time):
+1. Get coordinates for the house (from `config.js`, or [latlong.net](https://www.latlong.net/)).
+2. Install mpv once: `sudo apt-get install -y mpv`
+3. Run (replace with that house’s values):
 
 ```bash
 cd ~/MagicMirror/modules/MMM-DailyDua
-bash scripts/install-cron.sh --lat 42.4710579 --lon -83.0133362 --morning 7:15 --offset 40
+git pull
+bash scripts/install-cron.sh \
+  --lat YOUR_LAT \
+  --lon YOUR_LON \
+  --morning 7:15 \
+  --offset 40
 ```
 
-That installs:
+| Flag | What it sets |
+|------|----------------|
+| `--lat` / `--lon` | Location used to estimate **sunset** for evening adhkar |
+| `--morning` | Clock time for morning adhkar (e.g. `7:15`) |
+| `--offset` | Minutes **before sunset** to play evening adhkar (default `40`) |
 
-| Job | Schedule |
-|-----|----------|
-| Morning adhkar | every day at `7:15` (change with `--morning`) |
-| Evening adhkar | checks every 5 minutes; plays once ~`--offset` minutes before sunset for that lat/lon |
+Re-run the same command anytime you change house location or morning time — it replaces the old cron block.
 
-3. Test anytime:
+House-specific copy-paste commands also live in  
+[magicmirror-house-setup](https://github.com/Zamy97/magicmirror-house-setup) → `houses/*/LOCATION.md` and [ADHKAR-AUDIO.md](https://github.com/Zamy97/magicmirror-house-setup/blob/main/ADHKAR-AUDIO.md).
+
+#### Test
 
 ```bash
+crontab -l
 bash scripts/play-adhkar.sh morning
 bash scripts/play-adhkar.sh evening
 ```
 
 Logs: `~/.local/state/mmm-dailydua/cron.log`
+
+Audio sources:
+
+- Morning: [youtube.com/watch?v=P8EIBksC0MA](https://www.youtube.com/watch?v=P8EIBksC0MA)
+- Evening: [youtube.com/watch?v=fQUbhEHetks](https://www.youtube.com/watch?v=fQUbhEHetks)
 
 ## Config (display module)
 
