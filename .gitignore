@@ -1,3 +1,10 @@
 node_modules/
 .DS_Store
 *.log
+audio/*.m4a
+audio/*.mp3
+audio/*.webm
+audio/*.opus
+audio/*.m4a.part
+audio/*.mp3.part
+!audio/README.md

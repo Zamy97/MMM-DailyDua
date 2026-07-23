@@ -22,7 +22,19 @@ Module.register("MMM-DailyDua", {
 		updateInterval: 60 * 60 * 1000,
 		timeCheckInterval: 60 * 1000,
 		animationSpeed: 2000,
-		language: config.language || "en"
+		language: config.language || "en",
+
+		// Morning / evening adhkar audio (mpv)
+		playAudio: false,
+		audioPlayer: "mpv",
+		morningAudioFile: "audio/morning-adhkar.m4a",
+		eveningAudioFile: "audio/evening-adhkar.m4a",
+		morningPlayTime: "07:15",
+		eveningMinutesBeforeSunset: 40,
+		lat: null,
+		lon: null,
+		audioCheckInterval: 30 * 1000,
+		mpvArgs: []
 	},
 
 	getStyles() {
@@ -127,6 +139,7 @@ Module.register("MMM-DailyDua", {
 		this.timePeriodKey = this.getTimePeriodKey();
 		this.intervalSlot = this.getIntervalSlot();
 		this.requestDua();
+		this.initAudioPlayback();
 
 		setInterval(() => {
 			this.requestDua();
@@ -155,6 +168,21 @@ Module.register("MMM-DailyDua", {
 				this.requestDua();
 			}
 		}, this.config.timeCheckInterval);
+	},
+
+	initAudioPlayback() {
+		this.sendSocketNotification("INIT_AUDIO", {
+			playAudio: this.config.playAudio,
+			audioPlayer: this.config.audioPlayer,
+			morningAudioFile: this.config.morningAudioFile,
+			eveningAudioFile: this.config.eveningAudioFile,
+			morningPlayTime: this.config.morningPlayTime,
+			eveningMinutesBeforeSunset: this.config.eveningMinutesBeforeSunset,
+			lat: this.config.lat,
+			lon: this.config.lon,
+			audioCheckInterval: this.config.audioCheckInterval,
+			mpvArgs: this.config.mpvArgs
+		});
 	},
 
 	getDom() {
